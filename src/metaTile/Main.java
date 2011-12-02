@@ -28,6 +28,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import org.apache.commons.cli.*;
+
 /**
  * @author Andrew Harvey
  *
@@ -43,55 +45,88 @@ public class Main {
 	 * @throws IOException 
 	 */
 	public static void main(String[] args) throws IOException {
-		ArrayList<RenderingTile> tiles = new ArrayList<RenderingTile>();
-		
-		BufferedReader tileListReader = new BufferedReader(new FileReader(new File("tilesToRender_sorted.txt")));
-		
-		BufferedWriter renderMetatileListWriter = new BufferedWriter(new FileWriter(new File("tilesToRender_sorted_metatiles.txt")));
-
-		
-		String line = tileListReader.readLine();
-		while (line != null) {
-			String[] columns = line.split("/");
+		try {
+			/* parse the command line arguments */
+			// create the command line parser
+			CommandLineParser parser = new PosixParser();
+	
+			// create the Options
+			Options options = new Options();
+			options.addOption("i", "input", true, "File to read original tile list from.");
+			options.addOption("o", "output", true, "File to write shorter meta-tile list to.");
+			options.addOption("m", "metatiles", true, "Number of tiles in x and y direction to group into one meta-tile.");
 			
-			if (columns.length == 3)
-				tiles.add(new RenderingTile(Integer.parseInt(columns[0]), Integer.parseInt(columns[1]), Integer.parseInt(columns[2])));
+			// parse the command line arguments
+			CommandLine commandLine = parser.parse( options, args );
+	
+			if (!commandLine.hasOption("input") || !commandLine.hasOption("output") || !commandLine.hasOption("metatiles"))
+				printUsage(options);
 			
-			line = tileListReader.readLine();
-		}
-		
-		tileListReader.close();
-		
-		int metaTileSize = 4;
-		
-		int hits = 0;
-		
-		// tiles which we are already rendering as the top left corner of 4x4 metatiles
-		ArrayList<RenderingTile> whitelist = new ArrayList<RenderingTile>();
-		
-		// for each tile
-		for (int i = 0; i < tiles.size(); i++) {
-			boolean hit = false; // by default we aren't already rendering this tile as part of another metatile
-			for (RenderingTile j : whitelist) {
-				int dx = tiles.get(i).x - j.x;
-				int dy = tiles.get(i).y - j.y;
+			String inputFileName = commandLine.getOptionValue("input");
+			String outputFileName = commandLine.getOptionValue("output");
+			int metaTileSize = Integer.parseInt(commandLine.getOptionValue("metatiles"));
+			
+			
+			ArrayList<RenderingTile> tiles = new ArrayList<RenderingTile>();
+			
+			BufferedReader tileListReader = new BufferedReader(new FileReader(new File(inputFileName)));
+			
+			BufferedWriter renderMetatileListWriter = new BufferedWriter(new FileWriter(new File(outputFileName)));
+	
+			
+			String line = tileListReader.readLine();
+			while (line != null) {
+				String[] columns = line.split("/");
 				
-				if ( (j.z == tiles.get(i).z) &&
-				     ((dx >= 0) && (dx <= (metaTileSize - 1))) && 
-					 ((dy >= 0) && (dy <= (metaTileSize - 1)))  ) {
-					hit = true;
-					break;
+				if (columns.length == 3)
+					tiles.add(new RenderingTile(Integer.parseInt(columns[0]), Integer.parseInt(columns[1]), Integer.parseInt(columns[2])));
+				
+				line = tileListReader.readLine();
+			}
+			
+			tileListReader.close();
+			
+			int hits = 0;
+			
+			// tiles which we are already rendering as the top left corner of 4x4 metatiles
+			ArrayList<RenderingTile> whitelist = new ArrayList<RenderingTile>();
+			
+			// for each tile
+			for (int i = 0; i < tiles.size(); i++) {
+				boolean hit = false; // by default we aren't already rendering this tile as part of another metatile
+				for (RenderingTile j : whitelist) {
+					int dx = tiles.get(i).x - j.x;
+					int dy = tiles.get(i).y - j.y;
+					
+					if ( (j.z == tiles.get(i).z) &&
+					     ((dx >= 0) && (dx <= (metaTileSize - 1))) && 
+						 ((dy >= 0) && (dy <= (metaTileSize - 1)))  ) {
+						hit = true;
+						break;
+					}
+				}
+				
+				if (hit == false) {
+					hits++;
+					renderMetatileListWriter.write(tiles.get(i).toString() + "/" + metaTileSize + "\n");
+					whitelist.add(tiles.get(i));
 				}
 			}
-			
-			if (hit == false) {
-				hits++;
-				renderMetatileListWriter.write(tiles.get(i).toString() + "/" + metaTileSize + "\n");
-				whitelist.add(tiles.get(i));
-			}
+			renderMetatileListWriter.close();
+			System.out.println("Reduced " + tiles.size() + " tiles into " + hits + " metatiles of size " + metaTileSize);
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-		renderMetatileListWriter.close();
-		System.out.println("Reduced " + tiles.size() + " tiles into " + hits + " metatiles of size " + metaTileSize);
+	}
+	
+	public static void printUsage(Options options) {
+		System.out.println("java -jar metaTile.jar [options]");
+		System.out.println();
+		System.out.println("    Options:");
+		System.out.println("    -i, --input      " + options.getOption("input").getDescription());
+		System.out.println("    -o, --output     " + options.getOption("output").getDescription());
+		System.out.println("    -m, --metatiles  " + options.getOption("metatiles").getDescription());
+		System.exit(1);
 	}
 
 }

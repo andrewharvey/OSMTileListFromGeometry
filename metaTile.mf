@@ -1,1 +1,2 @@
 Main-Class: metaTile/Main
+Class-Path: /usr/share/java/commons-cli.jar
