@@ -1,0 +1,2 @@
+Main-Class: osmTileListFromGeometry/Main
+Class-Path: /usr/share/java/jts.jar /usr/share/java/postgresql.jar
