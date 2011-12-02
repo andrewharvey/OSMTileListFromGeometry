@@ -64,15 +64,19 @@ public class Main {
 	
 			// create the Options
 			Options options = new Options();
-			options.addOption("o", "output", true, "File to write list of tiles to.");
-			options.addOption("h", "host", true, "osm2pgsql db host");
-			options.addOption("p", "port", true, "osm2pgsql db port");
-			options.addOption("d", "db", true, "osm2pgsql db name");
-			options.addOption("u", "user", true, "osm2pgsql db user");
-			options.addOption("w", "password", true, "osm2pgsql db password");
+			options.addOption("h", "help", false, "");
+			options.addOption("O", "output", true, "File to write list of tiles to");
+			options.addOption("H", "host", true, "osm2pgsql db host");
+			options.addOption("P", "port", true, "osm2pgsql db port");
+			options.addOption("D", "db", true, "osm2pgsql db name");
+			options.addOption("U", "user", true, "osm2pgsql db user");
+			options.addOption("W", "password", true, "osm2pgsql db password");
 			
 			// parse the command line arguments
 			CommandLine line = parser.parse( options, args );
+			
+			if (line.hasOption("help"))
+				printUsage(options);
 	
 			String outputFileName;
 			if (!line.hasOption("output"))
@@ -246,4 +250,17 @@ public class Main {
 		return geom;
 	}
 
+	public static void printUsage(Options options) {
+		System.out.println("java -jar osmTileListFromGeometry.jar [options]");
+		System.out.println();
+		System.out.println("Options:");
+		System.out.println("    -h, --help      " + options.getOption("help").getDescription());
+		System.out.println("    -O, --output    " + options.getOption("output").getDescription());
+		System.out.println("    -H, --host      " + options.getOption("host").getDescription());
+		System.out.println("    -P, --port      " + options.getOption("port").getDescription());
+		System.out.println("    -D, --db        " + options.getOption("db").getDescription());
+		System.out.println("    -U, --user      " + options.getOption("user").getDescription());
+		System.out.println("    -W, --password  " + options.getOption("password").getDescription());
+		System.exit(1);
+	}
 }
