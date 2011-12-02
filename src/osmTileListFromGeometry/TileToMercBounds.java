@@ -23,7 +23,7 @@ package osmTileListFromGeometry;
 public class TileToMercBounds {
 	
 	private static int MAX_X = 20037508;
-	private static int MAX_Y = 19929239;
+	private static int MAX_Y = 20037508;
 	
 	/**
 	 * @param z
