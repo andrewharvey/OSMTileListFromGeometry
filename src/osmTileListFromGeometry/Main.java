@@ -38,10 +38,6 @@ import org.apache.commons.cli.*;
  * We retieve the OSM polygons from an osm2pgsql database.
  *
  */
-/**
- * @author lorenz
- *
- */
 public class Main {
 	
 	// the polygons to use as our source polygons for which we find all the OSM tiles within
