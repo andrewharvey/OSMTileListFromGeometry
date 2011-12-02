@@ -65,7 +65,7 @@ public class Main {
 			// create the Options
 			Options options = new Options();
 			options.addOption("h", "help", false, "");
-			options.addOption("O", "output", true, "File to write list of tiles to");
+			options.addOption("O", "output", true, "File to write list of tiles to (required)");
 			options.addOption("H", "host", true, "osm2pgsql db host");
 			options.addOption("P", "port", true, "osm2pgsql db port");
 			options.addOption("D", "db", true, "osm2pgsql db name");
@@ -80,7 +80,7 @@ public class Main {
 	
 			String outputFileName;
 			if (!line.hasOption("output"))
-				outputFileName = "tilesToRender.txt";
+				printUsage(options);
 			else
 				outputFileName = line.getOptionValue("output");
 			
