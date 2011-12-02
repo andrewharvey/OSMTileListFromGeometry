@@ -7,6 +7,7 @@ Build-Depends:
  , default-jdk
  , libjts-java
  , libpg-java
+ , libcommons-cli-java
 Standards-Version: 3.9.2
 Vcs-Git: git://github.com/andrewharvey/OSMTileListFromGeometry.git
 Vcs-Browser: https://github.com/andrewharvey/OSMTileListFromGeometry/
@@ -17,6 +18,7 @@ Depends:
  default-jre
  , libjts-java
  , libpg-java
+ , libcommons-cli-java
 Suggests: osm2pgsql
 Description: Generate a list of OSM tiles within a polygon
  Generates a list of OSM tiles within polygons retrieved from an osm2pgsql

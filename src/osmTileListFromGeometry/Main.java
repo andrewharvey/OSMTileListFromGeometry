@@ -28,6 +28,8 @@ import com.vividsolutions.jts.io.WKTReader;
 import java.sql.*;
 import java.util.ArrayList;
 
+import org.apache.commons.cli.*;
+
 /**
  * @author Andrew Harvey
  * 
@@ -59,36 +61,95 @@ public class Main {
 	 * @throws IOException 
 	 */
 	public static void main(String[] args) throws IOException {
-		FileWriter tileListFileWriter = new FileWriter("tilesToRender.txt");
-		tileListWriter = new BufferedWriter(tileListFileWriter);		  
-		
-		gf = new GeometryFactory();
-		
-		// define an arbitary area to generate tiles within (this one is NSW, Australia)
-		ArrayList<Geometry> nsw = new ArrayList<Geometry>();
-		nsw.add(gf.toGeometry(new Envelope(15676317.2673864,17701592.7270857, -4444354.61727114,-3338769.41530374)));
-		
-		// everything worldwide -- bluemarble
-		imageryBoundaries = nsw;
-		renderAllTiles(0,0,0, 0, 8);
-		
-		// landsat
-		imageryBoundaries = nsw;
-		renderAllTiles(0,0,0, 9, 12);
-
-		// nearmap
-		imageryBoundaries = grabBoundaryPolygonsFromPostgres("nearmap");
-		renderAllTiles(0,0,0, 13, 17); // start at 0,0,0 to get up to z13 quickly, but just start printing from z13 up
-		
-		// finish up
-		tileListWriter.close();
-
-		// print tile summary
-		System.out.println("");
-		System.out.println("###");
-		
-		int totalTiles = totalTiles(0, 15);
-		System.out.println(tileCount + " of " + totalTiles + " tiles (" + String.format("%.4f", (float)(tileCount * 100) / totalTiles) + "%)");
+		try {
+			/* parse the command line arguments */
+			// create the command line parser
+			CommandLineParser parser = new PosixParser();
+	
+			// create the Options
+			Options options = new Options();
+			options.addOption("o", "output", true, "File to write list of tiles to.");
+			options.addOption("h", "host", false, "osm2pgsql db host");
+			options.addOption("p", "port", false, "osm2pgsql db port");
+			options.addOption("d", "db", false, "osm2pgsql db name");
+			options.addOption("u", "user", false, "osm2pgsql db user");
+			options.addOption("w", "password", false, "osm2pgsql db password");
+			
+			// parse the command line arguments
+			CommandLine line = parser.parse( options, args );
+	
+			String outputFileName;
+			if (!line.hasOption("output"))
+				outputFileName = "tilesToRender.txt";
+			else
+				outputFileName = line.getOptionValue("output");
+			
+			String dbHost;
+			if (!line.hasOption("host"))
+				dbHost = "localhost";
+			else
+				dbHost = line.getOptionValue("host");
+			
+			String dbPort;
+			if (!line.hasOption("port"))
+				dbPort = "5432";
+			else
+				dbPort = line.getOptionValue("port");
+			
+			String dbName;
+			if (!line.hasOption("db"))
+				dbName = "osm";
+			else
+				dbName = line.getOptionValue("db");
+			
+			String dbUser;
+			if (!line.hasOption("user"))
+				dbUser = "osm";
+			else
+				dbUser = line.getOptionValue("user");
+			
+			String dbPassword;
+			if (!line.hasOption("password"))
+				dbPassword = "osm";
+			else
+				dbPassword = line.getOptionValue("password");
+	
+			FileWriter tileListFileWriter = new FileWriter(outputFileName);
+			tileListWriter = new BufferedWriter(tileListFileWriter);		  
+			
+			gf = new GeometryFactory();
+			
+			// define an arbitary area to generate tiles within (this one is NSW, Australia)
+			ArrayList<Geometry> nsw = new ArrayList<Geometry>();
+			nsw.add(gf.toGeometry(new Envelope(15676317.2673864,17701592.7270857, -4444354.61727114,-3338769.41530374)));
+			
+			// everything worldwide -- bluemarble
+			imageryBoundaries = nsw;
+			renderAllTiles(0,0,0, 0, 8);
+			
+			// landsat
+			imageryBoundaries = nsw;
+			renderAllTiles(0,0,0, 9, 12);
+	
+			// nearmap
+			// connect to a local postgresql
+			Class.forName("org.postgresql.Driver");
+			java.sql.Connection conn = DriverManager.getConnection("jdbc:postgresql://" + dbHost + ":" + dbPort + "/" + dbName, dbUser, dbPassword);
+			imageryBoundaries = grabBoundaryPolygonsFromPostgres(conn, "nearmap");
+			renderAllTiles(0,0,0, 13, 17); // start at 0,0,0 to get up to z13 quickly, but just start printing from z13 up
+			
+			// finish up
+			tileListWriter.close();
+	
+			// print tile summary
+			System.out.println("");
+			System.out.println("###");
+			
+			int totalTiles = totalTiles(0, 15);
+			System.out.println(tileCount + " of " + totalTiles + " tiles (" + String.format("%.4f", (float)(tileCount * 100) / totalTiles) + "%)");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 
@@ -159,19 +220,13 @@ public class Main {
 	 * @param area
 	 * @return
 	 */
-	public static ArrayList<Geometry> grabBoundaryPolygonsFromPostgres(String area) {
-		java.sql.Connection conn;
+	public static ArrayList<Geometry> grabBoundaryPolygonsFromPostgres(java.sql.Connection conn, String area) {
 		
 		// FIXME: use a WKB reader instead, should be faster
 		WKTReader wktReader = new WKTReader();
 		ArrayList<Geometry> geom = new ArrayList<Geometry>();
 
 		try {
-			// connect to a local postgresql
-			Class.forName("org.postgresql.Driver");
-			String url = "jdbc:postgresql://localhost:5432/osm";
-			conn = DriverManager.getConnection(url, "username", "password");
-
 			Statement s = conn.createStatement();
 			ResultSet r;
 			
