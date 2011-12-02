@@ -69,11 +69,11 @@ public class Main {
 			// create the Options
 			Options options = new Options();
 			options.addOption("o", "output", true, "File to write list of tiles to.");
-			options.addOption("h", "host", false, "osm2pgsql db host");
-			options.addOption("p", "port", false, "osm2pgsql db port");
-			options.addOption("d", "db", false, "osm2pgsql db name");
-			options.addOption("u", "user", false, "osm2pgsql db user");
-			options.addOption("w", "password", false, "osm2pgsql db password");
+			options.addOption("h", "host", true, "osm2pgsql db host");
+			options.addOption("p", "port", true, "osm2pgsql db port");
+			options.addOption("d", "db", true, "osm2pgsql db name");
+			options.addOption("u", "user", true, "osm2pgsql db user");
+			options.addOption("w", "password", true, "osm2pgsql db password");
 			
 			// parse the command line arguments
 			CommandLine line = parser.parse( options, args );
