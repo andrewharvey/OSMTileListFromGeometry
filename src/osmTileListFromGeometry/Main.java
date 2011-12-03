@@ -231,7 +231,7 @@ public class Main {
 			ResultSet r;
 			
 			if (area.equals("nearmap"))
-				r = s.executeQuery("select ST_AsText(way) from planet_osm_line where boundary in ('nearmap');");
+				r = s.executeQuery("select ST_AsText(way) from planet_osm_polygon where boundary in ('nearmap');");
 			else if (area.equals("australia"))
 				r = s.executeQuery("select ST_AsText(way) from planet_osm_line where (admin_level in ('2') and name in ('Australia'));");
 			else
