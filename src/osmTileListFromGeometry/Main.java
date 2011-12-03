@@ -65,7 +65,7 @@ public class Main {
 			// create the Options
 			Options options = new Options();
 			options.addOption("h", "help", false, "");
-			options.addOption("O", "output", true, "File to write list of tiles to (required)");
+			options.addOption("o", "output", true, "File to write list of tiles to (required)");
 			options.addOption("H", "host", true, "osm2pgsql db host");
 			options.addOption("P", "port", true, "osm2pgsql db port");
 			options.addOption("D", "db", true, "osm2pgsql db name");
@@ -78,11 +78,11 @@ public class Main {
 			if (line.hasOption("help"))
 				printUsage(options);
 	
-			String outputFileName;
+			
 			if (!line.hasOption("output"))
 				printUsage(options);
-			else
-				outputFileName = line.getOptionValue("output");
+			
+			String outputFileName = line.getOptionValue("output");
 			
 			String dbHost;
 			if (!line.hasOption("host"))
@@ -255,7 +255,7 @@ public class Main {
 		System.out.println();
 		System.out.println("Options:");
 		System.out.println("    -h, --help      " + options.getOption("help").getDescription());
-		System.out.println("    -O, --output    " + options.getOption("output").getDescription());
+		System.out.println("    -o, --output    " + options.getOption("output").getDescription());
 		System.out.println("    -H, --host      " + options.getOption("host").getDescription());
 		System.out.println("    -P, --port      " + options.getOption("port").getDescription());
 		System.out.println("    -D, --db        " + options.getOption("db").getDescription());
