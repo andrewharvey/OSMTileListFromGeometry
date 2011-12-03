@@ -27,6 +27,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import org.apache.commons.cli.*;
 
@@ -89,23 +90,24 @@ public class Main {
 			int hits = 0;
 			
 			// tiles which we are already rendering as the top left corner of 4x4 metatiles
-			ArrayList<RenderingTile> whitelist = new ArrayList<RenderingTile>();
+			HashSet<RenderingTile> whitelist = new HashSet<RenderingTile>();
 			
-			// for each tile
+			// for each tile in the list see if it has a meta-tile in the whitelist already
 			for (int i = 0; i < tiles.size(); i++) {
 				boolean hit = false; // by default we aren't already rendering this tile as part of another metatile
-				for (RenderingTile j : whitelist) {
-					int dx = tiles.get(i).x - j.x;
-					int dy = tiles.get(i).y - j.y;
-					
-					if ( (j.z == tiles.get(i).z) &&
-					     ((dx >= 0) && (dx <= (metaTileSize - 1))) && 
-						 ((dy >= 0) && (dy <= (metaTileSize - 1)))  ) {
-						hit = true;
-						break;
+				for (int dx = 0; dx < metaTileSize; dx++) {
+					for (int dy = 0; dy < metaTileSize; dy++) {
+						RenderingTile candidate = new RenderingTile(tiles.get(i).z, tiles.get(i).x - dx, tiles.get(i).y - dy);
+						if (whitelist.contains(candidate)) {
+							hit = true;
+							// now exit the two for loops iterating over tiles inside a meta-tile
+							dx = metaTileSize;
+							dy = metaTileSize;
+						}
 					}
 				}
 				
+				// if this tile doesn't already have a meta-tile in the whitelist, add it
 				if (hit == false) {
 					hits++;
 					renderMetatileListWriter.write(tiles.get(i).toString() + "/" + metaTileSize + "\n");
