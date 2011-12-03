@@ -2,6 +2,7 @@ Ensure your system has the dependencies listed in `debian/control`, then compile
 by running `ant`.
 
 Then run using,
+
     java -jar ./dist/osmTileListFromGeometry.jar -o 01-tileList.txt
     java -jar ./dist/metaTile.jar -i 01-tileList.txt -o 02-metaTileList.txt
 
