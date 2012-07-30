@@ -78,11 +78,9 @@ public class Main {
 			if (line.hasOption("help"))
 				printUsage(options);
 	
-			
-			if (!line.hasOption("output"))
-				printUsage(options);
-			
-			String outputFileName = line.getOptionValue("output");
+			String outputFileName = null;
+			if (line.hasOption("output"))
+				outputFileName = line.getOptionValue("output");
 			
 			String dbHost;
 			if (!line.hasOption("host"))
@@ -114,7 +112,14 @@ public class Main {
 			else
 				dbPassword = line.getOptionValue("password");
 	
-			FileWriter tileListFileWriter = new FileWriter(outputFileName);
+			// setup the FileWriter
+			// use STDOUT if no filename was given
+			FileWriter tileListFileWriter;
+			if (outputFileName == null)
+				tileListFileWriter = new FileWriter(FileDescriptor.out);
+			else
+				tileListFileWriter = new FileWriter(outputFileName);
+
 			tileListWriter = new BufferedWriter(tileListFileWriter);		  
 			
 			gf = new GeometryFactory();
